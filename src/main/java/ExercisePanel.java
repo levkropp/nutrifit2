@@ -200,7 +200,7 @@ public class ExercisePanel extends JFrame {
         return bmrPerMinute * duration + exerciseRate * duration;
     }
 
-    private double calculateBMR(UserProfile user) {
+    double calculateBMR(UserProfile user) {
         double weight = user.getWeight();
         double height = user.getHeight();
         int age = user.getAge();
