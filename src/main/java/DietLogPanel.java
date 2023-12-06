@@ -173,55 +173,81 @@ public class DietLogPanel extends JPanel implements interfaceContact {
     }
 
     private void logMeal() {
+        if (!parseAndValidateInput()) {
+            return;
+        }
+        calculateAndDisplayNutrition();
+        recordMeal();
+    }
+
+    private boolean parseAndValidateInput() {
         String selectedFood = (String) foodCombo.getSelectedItem();
         String mealType = (String) mealTypeCombo.getSelectedItem();
         String quantityStr = foodQuantityField.getText();
-        double quantity = 0;
+        double quantity;
         try {
             quantity = Double.parseDouble(quantityStr);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid quantity format");
-            return;
+            return false;
         }
         nutritionalValues = getNutritionalValue(selectedFood);
 
+        if (nutritionalValues.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No nutritional data found for the selected food.");
+            return false;
+        }
+        return true;
+    }
+
+    private void calculateAndDisplayNutrition() {
+        String selectedFood = (String) foodCombo.getSelectedItem();
         double calories = nutritionalValues.getOrDefault("KCAL", 0.0);
         double protein = nutritionalValues.getOrDefault("PROT", 0.0);
         double carbs = nutritionalValues.getOrDefault("CARB", 0.0);
         double vitaminC = nutritionalValues.getOrDefault("VITC", 0.0);
 
-        nutritionInfoLabel.setText("<html>Nutrition for " + selectedFood + ":<br>" +
+        nutritionInfoLabel.setText(buildNutritionInfoHtml(selectedFood, calories, protein, carbs, vitaminC));
+    }
+
+    private String buildNutritionInfoHtml(String food, double calories, double protein, double carbs, double vitaminC) {
+        return "<html>Nutrition for " + food + ":<br>" +
                 "Calories: " + calories + " kcal<br>" +
                 "Protein: " + protein + " g<br>" +
                 "Carbs: " + carbs + " g<br>" +
-                "Vitamin C: " + vitaminC + " mg</html>");
-
-        // 获取日期并格式化为年-月-日格式
-        Date selectedDate = (Date) datePicker.getModel().getValue();
-        String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(selectedDate);
-        // Check if the date already exists in the map
-        if (dateNutritionalValues.containsKey(formattedDate)) {
-            // Retrieve the existing nutritional values for this date
-            Map<String, Double> existingValues = dateNutritionalValues.get(formattedDate);
-
-            // Update the existing values with the new nutritional values
-            for (String key : nutritionalValues.keySet()) {
-                double existingValue = existingValues.getOrDefault(key, 0.0);
-                double newValue = nutritionalValues.getOrDefault(key, 0.0);
-                existingValues.put(key, existingValue + newValue);
-            }
-
-            // Put the updated values back into the map
-            dateNutritionalValues.put(formattedDate, existingValues);
-        } else {
-            // If the date does not exist, add a new entry to the map
-            dateNutritionalValues.put(formattedDate, nutritionalValues);
-        }
-
-        // 更新日志表格
-        mealLogTableModel.addRow(new Object[]{formattedDate, mealType, selectedFood, quantity, calories* quantity/100});
+                "Vitamin C: " + vitaminC + " mg</html>";
     }
 
+    private void recordMeal() {
+        String selectedFood = (String) foodCombo.getSelectedItem();
+        String mealType = (String) mealTypeCombo.getSelectedItem();
+        double quantity = Double.parseDouble(foodQuantityField.getText());
+        double calories = nutritionalValues.getOrDefault("KCAL", 0.0) * quantity / 100;
+
+        Date selectedDate = (Date) datePicker.getModel().getValue();
+        String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(selectedDate);
+
+        updateDateNutritionalValues(formattedDate);
+        mealLogTableModel.addRow(new Object[]{formattedDate, mealType, selectedFood, quantity, calories});
+    }
+
+    private void updateDateNutritionalValues(String formattedDate) {
+        if (dateNutritionalValues.containsKey(formattedDate)) {
+            Map<String, Double> existingValues = dateNutritionalValues.get(formattedDate);
+            updateExistingNutritionalValues(existingValues);
+            dateNutritionalValues.put(formattedDate, existingValues);
+        } else {
+            dateNutritionalValues.put(formattedDate, new HashMap<>(nutritionalValues));
+        }
+    }
+
+    private void updateExistingNutritionalValues(Map<String, Double> existingValues) {
+        for (String key : nutritionalValues.keySet()) {
+            double existingValue = existingValues.getOrDefault(key, 0.0);
+            double newValue = nutritionalValues.getOrDefault(key, 0.0);
+            existingValues.put(key, existingValue + newValue);
+        }
+    }
     public Map<String, Double> getNutritionalValue(String food) {
         Map<String, Double> nutritionalValues = new HashMap<>();
         Connection conn = null;

@@ -15,7 +15,6 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-
 public class ExercisePanel extends JFrame {
 
     private TableModel dietModel;
@@ -57,8 +56,8 @@ public class ExercisePanel extends JFrame {
 
         // Calorie chart selection and button
         JPanel calorieDateSelectionPanel = new JPanel(new FlowLayout());
-        JDatePickerImpl calorieStartDatePicker = createDatePicker();
-        JDatePickerImpl calorieEndDatePicker = createDatePicker();
+        JDatePickerImpl calorieStartDatePicker = DateUtil.createDatePicker();
+        JDatePickerImpl calorieEndDatePicker = DateUtil.createDatePicker();
 
         calorieDateSelectionPanel.add(new JLabel("Calorie Start Date:"));
         calorieDateSelectionPanel.add(calorieStartDatePicker);
@@ -76,8 +75,8 @@ public class ExercisePanel extends JFrame {
 
         // Nutrient chart selection and button
         JPanel nutrientDateSelectionPanel = new JPanel(new FlowLayout());
-        JDatePickerImpl nutrientStartDatePicker = createDatePicker();
-        JDatePickerImpl nutrientEndDatePicker = createDatePicker();
+        JDatePickerImpl nutrientStartDatePicker = DateUtil.createDatePicker();
+        JDatePickerImpl nutrientEndDatePicker = DateUtil.createDatePicker();
 
         nutrientDateSelectionPanel.add(new JLabel("Nutrient Start Date:"));
         nutrientDateSelectionPanel.add(nutrientStartDatePicker);
@@ -98,7 +97,7 @@ public class ExercisePanel extends JFrame {
 
         // Weight loss calculation panel
         JPanel weightLossPanel = new JPanel(new FlowLayout());
-        JDatePickerImpl targetDateSelector = createDatePicker();
+        JDatePickerImpl targetDateSelector = DateUtil.createDatePicker();
         weightLossPanel.add(new JLabel("Select Target Date:"));
         weightLossPanel.add(targetDateSelector);
 
@@ -124,20 +123,14 @@ public class ExercisePanel extends JFrame {
         }
     }
 
-    private JDatePickerImpl createDatePicker() {
-        UtilDateModel model = new UtilDateModel();
-        Properties p = new Properties();
-        p.put("text.today", "Today");
-        JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
-        return new JDatePickerImpl(datePanel, new DateLabelFormatter());
-    }
+
 
     private JPanel createExerciseLogPanel() {
         JPanel exercisePanel = new JPanel();
         exercisePanel.setLayout(new GridLayout(0, 2, 5, 5)); // 使用网格布局
 
         // 添加日期选择器
-        JDatePickerImpl exerciseDatePicker = createDatePicker();
+        JDatePickerImpl exerciseDatePicker = DateUtil.createDatePicker();
         exercisePanel.add(new JLabel("Exercise Date:"));
         exercisePanel.add(exerciseDatePicker);
 
